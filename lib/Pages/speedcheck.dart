@@ -3,6 +3,7 @@ import 'package:connectivity/connectivity.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_internet_speed_test/flutter_internet_speed_test.dart';
 import 'package:speedcheck_net/Pages/check.dart';
+import 'dart:io';
 
 class SpeedCheckNet extends StatefulWidget {
   const SpeedCheckNet({Key? key}) : super(key: key);
@@ -17,17 +18,32 @@ class _SpeedCheckNetState extends State<SpeedCheckNet> {
   double _currentSpeed = 0.0;
   bool _isDownloadTest = true;
   List<double> _speedData = [];
+  String _ipAddress = '';
 
   @override
   void initState() {
     super.initState();
     _initConnectivity();
+    _getIpAddress();
     _startSpeedTest();
   }
 
   Future<void> _initConnectivity() async {
     ConnectivityResult result = await Connectivity().checkConnectivity();
     print("Connectivity Status: $result");
+  }
+
+  Future<void> _getIpAddress() async {
+    for (var interface in await NetworkInterface.list()) {
+      for (var addr in interface.addresses) {
+        if (addr.type == InternetAddressType.IPv4) {
+          setState(() {
+            _ipAddress = addr.address;
+          });
+          return;
+        }
+      }
+    }
   }
 
   void _startSpeedTest() {
@@ -47,7 +63,7 @@ class _SpeedCheckNetState extends State<SpeedCheckNet> {
         setState(() {
           _isTesting = false;
         });
-        Navigator.push(
+        Navigator.pushReplacement(
           context,
           MaterialPageRoute(
             builder: (context) => SpeedTestResultScreen(
@@ -87,65 +103,92 @@ class _SpeedCheckNetState extends State<SpeedCheckNet> {
     );
   }
 
+  String _formatSpeed(double speed) {
+    if (speed < 1.0) {
+      return "${(speed * 1000).toStringAsFixed(2)} kbps";
+    } else {
+      return "${speed.toStringAsFixed(2)} Mbps";
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Color(0xFFF9F2E9),
-      body: Center(
-        child: _isTesting
-            ? Column(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Image.asset(
-                    'assets/images/speedchecklogo.png',
-                    fit: BoxFit.contain,
-                    width: MediaQuery.of(context).size.width * 0.6,
-                  ),
-                  SizedBox(height: 30),
-                  Column(
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(
-                            "${_currentSpeed.toStringAsFixed(2)} ",
-                            style: TextStyle(
-                              fontSize: 50,
-                              color: Color(0xFF102C57),
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          Text(
-                            'Mbps',
-                            style: TextStyle(
-                              fontSize: 14,
-                              color: Color(0xFF102C57),
-                            ),
-                          ),
-                        ],
-                      ),
-                      SizedBox(height: 8),
-                      Text(
-                        _isDownloadTest ? "Download speed" : "Upload speed",
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: Color(0xFF102C57),
-                        ),
-                      ),
-                    ],
-                  ),
-                  Container(
-                    width: double.infinity,
-                    height: 200,
-                    child: CustomPaint(
-                      painter: SpeedGraphPainter(_speedData),
+    return WillPopScope(
+      onWillPop: () async {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => check()),
+        );
+        return false;
+      },
+      child: Scaffold(
+        backgroundColor: Color.fromARGB(255, 255, 255, 255),
+        body: Center(
+          child: _isTesting
+              ? Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Image.asset(
+                      'assets/images/speedchecklogo.png',
+                      fit: BoxFit.contain,
+                      width: MediaQuery.of(context).size.width * 0.6,
                     ),
-                  ),
-                  SizedBox(height: 60)
-                ],
-              )
-            : Container(),
+                    SizedBox(height: 30),
+                    Column(
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              _formatSpeed(_currentSpeed).split(' ')[0],
+                              style: TextStyle(
+                                fontSize: 60,
+                                color: Color(0xFF102C57),
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            Text(
+                              _formatSpeed(_currentSpeed).split(' ')[1],
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: Color(0xFF102C57),
+                              ),
+                            ),
+                          ],
+                        ),
+                        SizedBox(height: 8),
+                        Text(
+                          _isDownloadTest ? "Download speed" : "Upload speed",
+                          style: TextStyle(
+                             color: Color.fromARGB(255, 93, 105, 120),
+                            fontWeight: FontWeight.w600
+                          ),
+                        ),
+                        SizedBox(height: 20),
+                        Text(
+                          "IP Address: $_ipAddress",
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Color.fromARGB(255, 93, 105, 120),
+                            fontWeight: FontWeight.w600
+                          ),
+                        ),
+                        SizedBox(height: 100),
+                      ],
+                    ),
+                    Container(
+                      width: double.infinity,
+                      height: 200,
+                      child: CustomPaint(
+                        painter: SpeedGraphPainter(_speedData),
+                      ),
+                    ),
+                    SizedBox(height: 60)
+                  ],
+                )
+              : Container(),
+        ),
       ),
     );
   }
@@ -201,74 +244,113 @@ class SpeedTestResultScreen extends StatelessWidget {
     required this.uploadSpeed,
   }) : super(key: key);
 
+  String _formatSpeed(double speed) {
+    if (speed < 1.0) {
+      return "${(speed * 1000).toStringAsFixed(2)} kbps";
+    } else {
+      return "${speed.toStringAsFixed(2)} Mbps";
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Color(0xFFF9F2E9),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(
-              'Speed Result',
-              style: TextStyle(fontSize: 30, color: Color(0xFF102C57),fontWeight: FontWeight.w600),
-            ),
-            SizedBox(height:40),
-            Row(mainAxisSize: MainAxisSize.min, children: [
+    return WillPopScope(
+      onWillPop: () async {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => check()),
+        );
+        return false;
+      },
+      child: Scaffold(
+        backgroundColor: Color.fromARGB(255, 255, 255, 255),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
               Text(
-                "${downloadSpeed.toStringAsFixed(2)} ",
+                'Speed Result',
                 style: TextStyle(
-                  fontSize: 50,
-                  color: Color(0xFF102C57),
-                  fontWeight: FontWeight.bold,
-                ),
+                    fontSize: 30,
+                    color: Color(0xFF102C57),
+                    fontWeight: FontWeight.w600),
               ),
-              Text(
-                'Mbps',
-                style: TextStyle(fontSize: 14, color: Color(0xFF102C57)),
-              )
-            ]),
-            Text('Download speed', style: TextStyle(fontSize: 14)),
-            SizedBox(height: 40),
-            Row(mainAxisSize: MainAxisSize.min, children: [
-              Text(
-                "${uploadSpeed.toStringAsFixed(2)} ",
-                style: TextStyle(
-                  fontSize: 50,
-                  color: Color(0xFF102C57),
-                  fontWeight: FontWeight.bold,
-                ),
+              SizedBox(height: 40),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    _formatSpeed(downloadSpeed).split(' ')[0],
+                    style: TextStyle(
+                      fontSize: 60,
+                      color: Color(0xFF102C57),
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  Text(
+                    _formatSpeed(downloadSpeed).split(' ')[1],
+                    style: TextStyle(fontSize: 14, color: Color(0xFF102C57)),
+                  ),
+                ],
               ),
-              Text(
-                'Mbps',
-                style: TextStyle(fontSize: 14, color: Color(0xFF102C57)),
-              )
-            ]),
-            Text('Upload speed', style: TextStyle(fontSize: 14)),
-            SizedBox(height: 300),
-            SizedBox(
-              width: 300,
-              height: 60,
-              child: ElevatedButton(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => check()),
-                  );
-                },
-                child: Text(
-                  "Check Speed Again",
-                  style: TextStyle(color: Colors.white),
-                ),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Color(0xFF102C57),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20),
+              Text('Download speed',
+                  style: TextStyle(fontSize: 14,  color: Color.fromARGB(255, 93, 105, 120),
+                            fontWeight: FontWeight.w600)),
+              SizedBox(height: 40),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    _formatSpeed(uploadSpeed).split(' ')[0],
+                    style: TextStyle(
+                      fontSize: 60,
+                      color: Color(0xFF102C57),
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  Text(
+                    _formatSpeed(uploadSpeed).split(' ')[1],
+                    style: TextStyle(fontSize: 14, color: Color(0xFF102C57)),
+                  ),
+                ],
+              ),
+              Text('Upload speed',
+                  style: TextStyle(fontSize: 14,  color: Color.fromARGB(255, 93, 105, 120),
+                            fontWeight: FontWeight.w600)),
+                            SizedBox(
+                              height: 40,
+                            ),
+              Image.asset(
+                'assets/images/SResult.png',
+                width: MediaQuery.of(context).size.width*0.6,
+              ),
+              SizedBox(
+                height: 40,
+              ),
+              SizedBox(
+                width: 300,
+                height: 60,
+                child: ElevatedButton(
+                  onPressed: () {
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(builder: (context) => check()),
+                    );
+                  },
+                  child: Text(
+                    "Check Speed Again",
+                    style: TextStyle(color: Colors.white),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Color(0xFF102C57),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20),
+                    ),
                   ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

@@ -6,7 +6,7 @@ class check extends StatelessWidget{
   @override
   Widget build(BuildContext context){
     return Container(
-        color: Color(0xFFF9F2E9),
+        color: Color.fromARGB(255, 255, 255, 255),
         child:Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           mainAxisAlignment: MainAxisAlignment.center,

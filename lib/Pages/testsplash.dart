@@ -54,7 +54,7 @@ class _SplashState extends State<Splash1> with SingleTickerProviderStateMixin {
           // Gradient Background
           Container(
             decoration: BoxDecoration(
-              color: Color(0xFFF9F2E9),
+              color: Color.fromARGB(255, 255, 255, 255),
             ),
           ),
           // Centered Truck Image
@@ -71,25 +71,7 @@ class _SplashState extends State<Splash1> with SingleTickerProviderStateMixin {
             ),
           ),
           // Positioned Text
-          Positioned(
-            left: 0,
-            right: 0,
-            bottom: 60,
-            child: AnimatedOpacity(
-              opacity: _animation.value,
-              duration: Duration(milliseconds: 500),
-              child: Text(
-                'Speedcheck.net',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontFamily: 'poppins',
-                  color: Color(0xFF102C57), // Text color changed to white
-                  fontSize: 32,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-          ),
+
         ],
       ),
     );

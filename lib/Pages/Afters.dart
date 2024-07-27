@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:animate_do/animate_do.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
-import 'package:speedcheck_net/Pages/Loginpage.dart';
+import 'package:speedcheck_net/Pages/check.dart';
 
 class Asplash extends StatefulWidget {
   @override
@@ -16,7 +16,7 @@ class _AsplashState extends State<Asplash> {
     return Scaffold(
       body: Container(
         decoration: BoxDecoration(
-          color: Color(0xFFF9F2E9),
+          color: Color.fromARGB(255, 255, 255, 255),
         ),
         child: Column(
           children: [
@@ -27,20 +27,17 @@ class _AsplashState extends State<Asplash> {
                   Column1(
                     context,
                     'assets/images/pageview3.png',
-                    'Want to know your internet speed?',
-                    'Check it quickly with no adware, no data sharing, and no third-party cookies.',
+                    'Quickly assess your Internet speed with our app',
                   ),
                   Column1(
                     context,
                     'assets/images/pageview2.png',
-                    'No catchy headline needed!',
-                    'Because it\'s 100% ad free!',
+                    'That\'s 100% ad free!',
                   ),
                   Column2(
                     context,
                     'assets/images/pageview1.png',
-                    'Speedcheck.net',
-                    'Check your Internet speed now',
+                    'Check your Internet speed now'
                   ),
                 ],
               ),
@@ -62,16 +59,19 @@ class _AsplashState extends State<Asplash> {
     );
   }
 
-  Column Column1(BuildContext context, String p1, String t1, String t2) {
+  Column Column1(BuildContext context, String p1, String t1) {
     return Column(
       children: <Widget>[
-        SizedBox(height:40),
+        SizedBox(height: 40),
         Container(
           height: MediaQuery.of(context).size.height * 0.5,
           child: Image.asset(
             p1,
             fit: BoxFit.contain,
           ),
+        ),
+        SizedBox(
+          height: 40,
         ),
         Expanded(
           child: Column(
@@ -97,26 +97,6 @@ class _AsplashState extends State<Asplash> {
               ),
               SizedBox(
                 height: 40,
-              ),
-              Row(
-                mainAxisSize: MainAxisSize.max,
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: <Widget>[
-                  Container(
-                    width: MediaQuery.of(context).size.width * 0.9,
-                    child: Text(
-                      t2,
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontFamily: 'RobotoSerif',
-                        color: Color(0xFF102C57),
-                        fontSize: 15,
-                        fontWeight: FontWeight.normal,
-                      ),
-                    ),
-                  ),
-                ],
               ),
             ],
           ),
@@ -125,10 +105,10 @@ class _AsplashState extends State<Asplash> {
     );
   }
 
-  Column Column2(BuildContext context, String p1, String t1, String t2) {
+  Column Column2(BuildContext context, String p1, String t1) {
     return Column(
       children: <Widget>[
-        SizedBox(height:40),
+        SizedBox(height: 40),
         Container(
           height: MediaQuery.of(context).size.height * 0.5,
           child: Image.asset(
@@ -159,7 +139,7 @@ class _AsplashState extends State<Asplash> {
                 ],
               ),
               SizedBox(
-                height: 40,
+                height: 30,
               ),
               Row(
                 mainAxisSize: MainAxisSize.max,
@@ -181,7 +161,7 @@ class _AsplashState extends State<Asplash> {
                 ],
               ),
               SizedBox(
-                height: 40,
+                height: 10,
               ),
               Padding(
                 padding: EdgeInsets.all(30.0),
@@ -191,7 +171,7 @@ class _AsplashState extends State<Asplash> {
                       onTap: () {
                         Navigator.push(
                           context,
-                          MaterialPageRoute(builder: (context) => Login()),
+                          MaterialPageRoute(builder: (context) => check()),
                         );
                       },
                       child: FadeInUp(
